@@ -1,98 +1,99 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
+import { useEffect, useRef } from "react";
+import { Animated, StatusBar, StyleSheet, Text } from "react-native";
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+export default function SplashScreen() {
+  const router = useRouter();
 
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
+  const scale = useRef(new Animated.Value(0.5)).current;
+  const opacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const animation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(scale, {
+          toValue: 1.15,
+          duration: 1200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(scale, {
+          toValue: 0.85,
+          duration: 1200,
+          useNativeDriver: true,
+        }),
+      ]),
     );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
+
+    Animated.timing(opacity, {
+      toValue: 1,
+      duration: 700,
+      useNativeDriver: true,
+    }).start();
+
+    animation.start();
+
+    const timer = setTimeout(() => {
+      animation.stop();
+      router.replace("/(tabs)");
+    }, 3000);
+
+    return () => {
+      clearTimeout(timer);
+      animation.stop();
+    };
+  }, []);
+
   return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
-}
+    <LinearGradient
+      colors={["#241309", "#60320B", "#1C1008"]}
+      style={styles.container}
+    >
+      <StatusBar hidden />
 
-export default function HomeScreen() {
-  return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
+      <Animated.View
+        style={[
+          styles.content,
+          {
+            opacity,
+            transform: [{ scale }],
+          },
+        ]}
+      >
+        <Text style={styles.om}>ॐ</Text>
 
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
+        <Text style={styles.title}>MantraLifes</Text>
 
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
-
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
-    </ThemedView>
+        <Text style={styles.subtitle}>Find peace through divine chanting</Text>
+      </Animated.View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'row',
+    justifyContent: "center",
+    alignItems: "center",
   },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
+  content: {
+    alignItems: "center",
   },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
+  om: {
+    fontSize: 110,
+    color: "#FFC66D",
+    textShadowColor: "#FFAA33",
+    textShadowRadius: 30,
   },
   title: {
-    textAlign: 'center',
+    fontSize: 32,
+    fontWeight: "bold",
+    color: "#FFFFFF",
+    marginTop: 20,
   },
-  code: {
-    textTransform: 'uppercase',
-  },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
+  subtitle: {
+    color: "#F5D9B4",
+    fontSize: 14,
+    marginTop: 10,
   },
 });
